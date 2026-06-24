@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.UIElements;
-using System.Collections.Generic;
 
 public class AssetManagerTool : EditorWindow
 {
@@ -10,24 +9,6 @@ public class AssetManagerTool : EditorWindow
     {
         AssetManagerTool wnd = GetWindow<AssetManagerTool>();
         wnd.titleContent = new GUIContent("AssetManagerTool");
-    }
-
-    private List<Texture2D> GetTextureAssets()
-    {
-        List<Texture2D> ret_textures = new List<Texture2D>();
-        
-        string[] guids = AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/Textures" });
-
-        foreach(var guid in guids)
-        {
-            string path = AssetDatabase.GUIDToAssetPath(guid);
-            Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-            if(texture == null) continue;
-
-            ret_textures.Add(texture);
-        }
-
-        return ret_textures;
     }
 
     public void CreateGUI()
@@ -53,20 +34,44 @@ public class AssetManagerTool : EditorWindow
 
         root.Add(assetContainer);
 
-        var textureAssets = GetTextureAssets();
+        var textureAssets = AssetUtility.GetTextureAssets();
         if(textureAssets.Count == 0) return;
 
         // Show texture assets
-        foreach(var asset in textureAssets)
+        foreach(var texture in textureAssets)
         {
-            Image assetIcon = new Image();
-            assetIcon.style.marginLeft = 10;
-            assetIcon.style.marginRight = 10;
-            assetIcon.style.marginBottom = 10;
-            assetIcon.image = AssetPreview.GetMiniThumbnail(asset);
-            assetIcon.style.width = 100;
-            assetIcon.style.height = 100;
-            assetContainer.Add(assetIcon);   
+            var card = AssetUtility.CreateDefaultCard();
+            
+            var icon = AssetUtility.CreateImage(48, 48);
+            icon.image = AssetPreview.GetMiniThumbnail(texture.asset);
+
+            var tex_label = AssetUtility.CreateDefaultLabel();
+            tex_label.text = $"{texture.assetName}{texture.extensionName}";
+
+            card.Add(icon);
+            card.Add(tex_label);
+
+            assetContainer.Add(card); 
+        }
+
+        var audioClips = AssetUtility.GetAudioClips();
+        if(audioClips.Count == 0) return;
+
+        // Show Audio clips
+        foreach(var audioClip in audioClips)
+        {
+            var card = AssetUtility.CreateDefaultCard();
+
+            var icon = AssetUtility.CreateImage(48, 48);
+            icon.image = AssetPreview.GetMiniThumbnail(audioClip.asset);
+
+            var audio_label = AssetUtility.CreateDefaultLabel();
+            audio_label.text = $"{audioClip.assetName}{audioClip.extensionName}";
+
+            card.Add(icon);
+            card.Add(audio_label);
+
+            assetContainer.Add(card); 
         }
     }
 }
